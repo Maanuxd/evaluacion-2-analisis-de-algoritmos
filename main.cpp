@@ -67,12 +67,14 @@ int main() {
         corrector();
         
         ordenar_alumnos();
+        
         //cout<<"tamaño real: "<<postulantes.size()<<endl;
-        cout<<"\nPostulante 1: "<<postulantes[0].rut<<endl;
+        
         
         ordenar_carreras();
+        
         //cout<<"tamaño real vector carreras: "<<carreras.size()<<endl;
-        cout<<"carrera 1: "<<carreras[0].codigo<<endl;
+        //cout<<"carrera 1: "<<carreras[0].codigo<<endl;
         crear_salidas(carreras);
         designacion_carrera(postulantes,carreras);
         
@@ -124,10 +126,10 @@ vector<alumno> ordenar_alumnos(){
     archivo.open("puntajes.csv");
     
     if(archivo.fail()){
-        std::cout<<"No se pudo leer el archivo"<<endl;
+        std::cout<<"No se pudo leer el archivo "<<endl;
         exit(1);
     }
-    else{ std::cout<<"SE leera el archivo"<<endl;
+    else{ std::cout<<"Se leera el archivo puntajes"<<endl;
         //leer archivo puntajes.csv e ingresa los datos en un struct
         for(i=0;!archivo.eof();i++){
             
@@ -164,6 +166,7 @@ vector<alumno> ordenar_alumnos(){
             }
         }
         std::cout<<"Cantidad de postulados: "<<linea<<endl;
+        postulantes.pop_back();
         std::cout<<"tamaño vector: "<<postulantes.size()<<endl;        
     }
     
@@ -172,7 +175,7 @@ vector<alumno> ordenar_alumnos(){
     //ordena el vector de mayor a menor segun promedio de matematicas y lenguaje
     std::sort(postulantes.begin(),postulantes.end());
     
-    std::cout<<"VECTOR ORDENADO Y WEA"<<endl;
+    //std::cout<<"VECTOR ORDENADO Y WEA"<<endl;
     return postulantes;
 }
 
@@ -188,7 +191,7 @@ vector<Carrera> ordenar_carreras(){
         exit(1);
     }
     else{ 
-        std::cout<<"SE leera el archivo"<<endl;
+        std::cout<<"Se leera el archivo admision-PSU"<<endl;
         //leer archivo Admision-PSU.csv e ingresa los datos en un vector de struct
         while(!archivo.eof()){
             
@@ -245,7 +248,8 @@ vector<Carrera> ordenar_carreras(){
                 i++;
             }
         }
-        std::cout<<"N° de carreras disponibles: "<<i<<endl;        
+        std::cout<<"N° de carreras disponibles: "<<i<<endl;
+        carreras.pop_back();       
     }
     
     archivo.close();
@@ -255,9 +259,8 @@ vector<Carrera> ordenar_carreras(){
     
     //for (int j=0; j<carreras.size();j++){
       //  std::cout<<"\n"<<j+1<<" "<<carreras[j].nombre<<endl;
-      //  std::cout<<"codigo: "<<carreras[j].codigo<<endl;
-      //  std::cout<<"primer_mat: "<<carreras[j].primer_mat<<endl;
-      //  std::cout<<"ultimo_mat: "<<carreras[j].ultimo_mat<<"\n"<<endl;
+        //std::cout<<"codigo: "<<carreras[j].codigo<<endl;
+      //  std::cout<<"vacantes disponibles: "<<carreras[j].vacantes<<endl;
     //}
     
     return carreras;
@@ -282,27 +285,39 @@ void crear_salidas(vector <Carrera> carreras){//crear archivos.txt para cada car
 }
 
 void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
-    //tomar primer alumno y recorrer struct carreras
-    //al recorrer cada struct carrera, sacar promedio con la ponderaciones
-    //la carrera donde tenga mayor promedio y queden cupos sera a la que postule 
+    //tomar primer alumno y recorrer vector carreras
+    //al recorrer cada parte del vector carreras, revisar si quedan cupos,
+    //si quedan cupos,sacar promedio con la ponderaciones, caso contrario, 
+    //pasar a la siguiente carrera
+    //la carrera donde tenga mayor promedio sera a la que postule 
     //ingresar los datos al archivo de salida correspondiente
-    //hacer lo mismo con cada elemento del vector de structs alumnos
-    int i,j,rut_aux,lugar;
-    
-    //std::cout<< "postulante 1: "<<postulantes[0].rut<<endl;
-    //std::cout<<"puntaje ciencias e historia: "<<postulantes[0].puntcs<<" "<<postulantes[0].puntcs<<endl; 
-    
+    //hacer lo mismo con cada elemento del vector de postulantes
+    int i,j,k,cont; 
+    ofstream archivo;
+
     for (i=0;i<postulantes.size();i++){
         string nombre_archivo;
-        float p_postulacion, prom_mayor, p_NEM, p_ranking, p_mate, p_leng, p_historia, p_ciencias;
+        int rut_aux=0,lugar=0;
+        float p_postulacion, prom_mayor=0, p_NEM, p_ranking, p_mate, p_leng, p_historia, p_ciencias;
+        
         if(postulantes[i].promML < 450){
                 std::cout<<postulantes[i].rut<<" no cumple los requisitos para postular"<<endl;
                 i++;
         }
         else{
             for(j=0;j<carreras.size();j++){
-                if(carreras[j].vacantes > 0){
-                    //std::cout<<"vacantes disponibles en "<<carreras[j].nombre<<": "<<carreras[j].vacantes<<endl;
+                if(carreras[j].vacantes <= 0){
+                    //std::cout<<"no hay vacantes en esta carrera\n"<<endl;
+                    j++;   
+                    k++;
+                    if(k==28){
+                        cout<<"No quedan mas cupos en la u"<<endl;
+                        break; 
+                    }
+                }   
+            
+                else{
+                    
                     p_NEM = postulantes[i].NEM * carreras[j].pond_NEM;
                     p_ranking = postulantes[i].ranking * carreras[j].pond_ranking;
                     p_mate = postulantes[i].puntmate * carreras[j].pond_mate;
@@ -311,47 +326,45 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
                     p_ciencias = postulantes[i].puntcs * carreras[j].pond_cs;
                 
                     if(p_ciencias >= p_historia){
-                        
                         p_postulacion = p_NEM + p_ranking + p_mate + p_leng + p_ciencias;
-
                     }
                     else{
-                        
                         p_postulacion = p_NEM + p_ranking + p_mate + p_leng + p_historia;
-                        
                     }
 
                     if(p_postulacion >= prom_mayor){
                         prom_mayor = p_postulacion;
-                        //std::cout<<"nuevo puntaje mayor: "<<prom_mayor<<endl;
                         rut_aux = postulantes[i].rut;
-                        //cout<<"rut postulante valido: "<<rut_aux<<endl;
-                        nombre_archivo = carreras[j].codigo;
-                        nombre_archivo+=".txt";
-                        //cout<<"nombre del archivo donde queda registrado: "<<nombre_archivo<<endl;
-                        lugar = j;
-                        j++;
+                        
+                        lugar = j;    
                     }
-                    else {
-                        i++;
+                    else{
+                        j++;
                     }   
                 }
-                else{
-                    //std::cout<<"no hay vacantes en esta carrera\n"<<endl;
-                    j++;
-                }
-                ofstream archivo;
-                archivo.open(nombre_archivo.c_str(),ios::app);
-                archivo<<"Rut: "<<postulantes[i].rut<<endl;
-                archivo<<"puntaje de postulacion: "<<prom_mayor<<endl;
-                archivo.close();
-                carreras[lugar].vacantes = carreras[lugar].vacantes - 1;
-                
+                    
             }//aqui se cierra el for que recorre las carreras
-        
+        //cout<<"rut postulante valido: "<<rut_aux<<endl;
+        //std::cout<<"nuevo puntaje mayor: "<<prom_mayor<<endl;
+        nombre_archivo = carreras[lugar].codigo;
+        nombre_archivo+=".txt";
 
-        
+        archivo.open(nombre_archivo.c_str(),ios::app);
+
+        if(archivo.fail()){
+            std::cout<<"No se pudo abrir el archivo "<<endl;
+            exit(1);
         }
-       //Hasta aca llega le for que recorre los alumnos 
+        else{
+            archivo<<"Rut: "<<postulantes[i].rut<<endl;
+            archivo<<"puntaje de postulacion: "<<prom_mayor<<endl;
+            archivo.close();
+            carreras[lugar].vacantes --;
+            
+            
+
+        }
+        //Hasta aca llega le for que recorre los alumnos 
+        }
     }
 }
