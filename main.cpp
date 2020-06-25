@@ -9,8 +9,6 @@
 
 using namespace std;
 
-
-
 /**
  * @param argc cantidad de argumentos
  * @param argv argumentos
@@ -73,8 +71,10 @@ int main() {
         
         ordenar_carreras();
         
-        //cout<<"tamaño real vector carreras: "<<carreras.size()<<endl;
-        //cout<<"carrera 1: "<<carreras[0].codigo<<endl;
+        cout<<"vacantes "<<carreras[3].nombre<<": "<<carreras[3].vacantes<<endl;
+        cout<<"vacantes "<<carreras[5].nombre<<": "<<carreras[5].vacantes<<endl;
+        cout<<"vacantes "<<carreras[17].nombre<<": "<<carreras[17].vacantes<<endl;
+        cout<<"vacantes "<<carreras[19].nombre<<": "<<carreras[19].vacantes<<endl;
         crear_salidas(carreras);
         designacion_carrera(postulantes,carreras);
         
@@ -133,12 +133,12 @@ vector<alumno> ordenar_alumnos(){
         //leer archivo puntajes.csv e ingresa los datos en un struct
         for(i=0;!archivo.eof();i++){
             
-                alumno postulante;
-                string rut_alumno,nem,rnkg,mate,leng,cs,his;
+            alumno postulante;
+            string rut_alumno,nem,rnkg,mate,leng,cs,his;
 
-            
-                postulantes.push_back(alumno());
-                linea = i;
+            postulantes.push_back(alumno());
+            linea = i;
+
             if (!archivo.eof()){
                 getline(archivo,rut_alumno,';');
                 istringstream(rut_alumno)>>postulantes[i].rut;
@@ -165,9 +165,9 @@ vector<alumno> ordenar_alumnos(){
                 postulantes[i].promML = (postulantes[i].puntmate + postulantes[i].puntleng)/2;
             }
         }
-        std::cout<<"Cantidad de postulados: "<<linea<<endl;
+        //std::cout<<"Cantidad de postulados: "<<linea<<endl;
         postulantes.pop_back();
-        std::cout<<"tamaño vector: "<<postulantes.size()<<endl;        
+        //std::cout<<"tamaño vector: "<<postulantes.size()<<endl;        
     }
     
     archivo.close();
@@ -248,7 +248,7 @@ vector<Carrera> ordenar_carreras(){
                 i++;
             }
         }
-        std::cout<<"N° de carreras disponibles: "<<i<<endl;
+        //std::cout<<"N° de carreras disponibles: "<<i<<endl;
         carreras.pop_back();       
     }
     
@@ -257,11 +257,11 @@ vector<Carrera> ordenar_carreras(){
     //ordena el vector de mayor a menor segun ultimo puntaje de ingreso 2019
     std::sort(carreras.begin(),carreras.end());
     
-    //for (int j=0; j<carreras.size();j++){
-      //  std::cout<<"\n"<<j+1<<" "<<carreras[j].nombre<<endl;
-        //std::cout<<"codigo: "<<carreras[j].codigo<<endl;
-      //  std::cout<<"vacantes disponibles: "<<carreras[j].vacantes<<endl;
-    //}
+    for (int j=0; j<carreras.size();j++){
+        std::cout<<"\n"<<j+1<<" "<<carreras[j].nombre<<endl;
+        std::cout<<"codigo: "<<carreras[j].codigo<<endl;
+        std::cout<<"vacantes disponibles: "<<carreras[j].vacantes<<endl;
+    }
     
     return carreras;
     std::cout<<"\nVECTOR CARRERAS ORDENADO Y WEA"<<"\n"<<endl;
@@ -307,17 +307,15 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
         else{
             for(j=0;j<carreras.size();j++){
                 if(carreras[j].vacantes <= 0){
-                    //std::cout<<"no hay vacantes en esta carrera\n"<<endl;
                     j++;   
                     k++;
-                    if(k==28){
-                        cout<<"No quedan mas cupos en la u"<<endl;
+                    if(k<=28){
+                        cout<<"No quedan mas cupos en la UTEM"<<endl;
                         break; 
                     }
                 }   
             
                 else{
-                    
                     p_NEM = postulantes[i].NEM * carreras[j].pond_NEM;
                     p_ranking = postulantes[i].ranking * carreras[j].pond_ranking;
                     p_mate = postulantes[i].puntmate * carreras[j].pond_mate;
@@ -335,8 +333,7 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
                     if(p_postulacion >= prom_mayor){
                         prom_mayor = p_postulacion;
                         rut_aux = postulantes[i].rut;
-                        
-                        lugar = j;    
+                        lugar = j;
                     }
                     else{
                         j++;
@@ -344,27 +341,40 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
                 }
                     
             }//aqui se cierra el for que recorre las carreras
-        //cout<<"rut postulante valido: "<<rut_aux<<endl;
-        //std::cout<<"nuevo puntaje mayor: "<<prom_mayor<<endl;
-        nombre_archivo = carreras[lugar].codigo;
-        nombre_archivo+=".txt";
+        }
 
-        archivo.open(nombre_archivo.c_str(),ios::app);
+        if (prom_mayor>0){
+            nombre_archivo = carreras[lugar].codigo;
+            nombre_archivo+=".txt";
 
-        if(archivo.fail()){
-            std::cout<<"No se pudo abrir el archivo "<<endl;
-            exit(1);
+            archivo.open(nombre_archivo.c_str(),ios::app);
+
+            if(archivo.fail()){
+                std::cout<<"No se pudo abrir el archivo "<<endl;
+                exit(1);
+            }
+            else{
+                archivo<<"Rut: "<<postulantes[i].rut<<endl;
+                archivo<<"puntaje de postulacion: "<<prom_mayor<<endl;
+                archivo.close();
+                carreras[lugar].vacantes --;
+                if (carreras[lugar].vacantes==0){
+                    cout<<"no quedan vacantes en:  "<<carreras[lugar].codigo<<endl;
+                    j++;
+                }
+                
+        
+                
+                if(k<=28){
+                    cout<<"No quedan mas cupos en la u"<<endl;
+                    break; 
+                }
+            }    
         }
         else{
-            archivo<<"Rut: "<<postulantes[i].rut<<endl;
-            archivo<<"puntaje de postulacion: "<<prom_mayor<<endl;
-            archivo.close();
-            carreras[lugar].vacantes --;
-            
-            
-
+            break;
         }
-        //Hasta aca llega le for que recorre los alumnos 
-        }
+        //Hasta aca llega le for que recorre los alumnos    
     }
+    
 }
