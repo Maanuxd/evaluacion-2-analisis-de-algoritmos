@@ -65,16 +65,8 @@ int main() {
         corrector();
         
         ordenar_alumnos();
-        
-        //cout<<"tamaño real: "<<postulantes.size()<<endl;
-        
-        
         ordenar_carreras();
         
-        cout<<"vacantes "<<carreras[3].nombre<<": "<<carreras[3].vacantes<<endl;
-        cout<<"vacantes "<<carreras[5].nombre<<": "<<carreras[5].vacantes<<endl;
-        cout<<"vacantes "<<carreras[17].nombre<<": "<<carreras[17].vacantes<<endl;
-        cout<<"vacantes "<<carreras[19].nombre<<": "<<carreras[19].vacantes<<endl;
         crear_salidas(carreras);
         designacion_carrera(postulantes,carreras);
         
@@ -292,7 +284,7 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
     //la carrera donde tenga mayor promedio sera a la que postule 
     //ingresar los datos al archivo de salida correspondiente
     //hacer lo mismo con cada elemento del vector de postulantes
-    int i,j,k,cont; 
+    int i,j,k,cont=0; 
     ofstream archivo;
 
     for (i=0;i<postulantes.size();i++){
@@ -307,9 +299,9 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
         else{
             for(j=0;j<carreras.size();j++){
                 if(carreras[j].vacantes <= 0){
-                    j++;   
+                    //j++;   
                     k++;
-                    if(k<=28){
+                    if(k==28){
                         cout<<"No quedan mas cupos en la UTEM"<<endl;
                         break; 
                     }
@@ -358,14 +350,15 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
                 archivo<<"puntaje de postulacion: "<<prom_mayor<<endl;
                 archivo.close();
                 carreras[lugar].vacantes --;
-                if (carreras[lugar].vacantes==0){
-                    cout<<"no quedan vacantes en:  "<<carreras[lugar].codigo<<endl;
-                    j++;
+                cont++;
+                
+                if (carreras[lugar].vacantes<=0){
+                    cout<<"no quedan vacantes en:  "<<carreras[lugar].nombre<<endl;
+                    //cout<<"vacantes disponibles en "<<carreras[17].nombre<<" : "<<carreras[17].vacantes<<endl;
+
                 }
                 
-        
-                
-                if(k<=28){
+                if(k==28){
                     cout<<"No quedan mas cupos en la u"<<endl;
                     break; 
                 }
@@ -376,5 +369,6 @@ void designacion_carrera(vector<alumno> postulantes, vector <Carrera> carreras){
         }
         //Hasta aca llega le for que recorre los alumnos    
     }
+    cout<<"contador: "<<cont<<endl;
     
 }
